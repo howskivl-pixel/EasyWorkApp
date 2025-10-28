@@ -16,6 +16,8 @@ from PySide6.QtWidgets import (
 
 from core.dxf_core import DXFAnalysisResult, analyze_dxf
 
+from .widgets import DxfPreviewWidget
+
 
 class DxfImportTab(QWidget):
     """Tab that lets the user load a DXF file and view calculated metrics."""
@@ -28,6 +30,8 @@ class DxfImportTab(QWidget):
         self._result: DXFAnalysisResult | None = None
         self._path_label = QLabel("Файл не выбран")
         self._path_label.setWordWrap(True)
+
+        self._preview = DxfPreviewWidget()
 
         self._area_label = QLabel("-")
         self._length_label = QLabel("-")
@@ -45,6 +49,11 @@ class DxfImportTab(QWidget):
         layout.addWidget(select_btn)
 
         layout.addWidget(self._path_label)
+
+        preview_group = QGroupBox("Предпросмотр")
+        preview_layout = QVBoxLayout(preview_group)
+        preview_layout.addWidget(self._preview)
+        layout.addWidget(preview_group)
 
         metrics_group = QGroupBox("Результаты расчёта")
         metrics_form = QFormLayout(metrics_group)
@@ -86,6 +95,7 @@ class DxfImportTab(QWidget):
         self._path_label.setText(
             f"Загружен файл: {result.source_path.name} (путь: {result.source_path})"
         )
+        self._preview.set_result(result)
         self._scale_label.setText(f"{result.scale_factor:.3f}")
         self._area_label.setText(f"{result.area_cm2:.2f}")
         self._length_label.setText(f"{result.length_m:.3f}")

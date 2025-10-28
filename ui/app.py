@@ -1,17 +1,18 @@
 ﻿import sys
+from typing import Any
 
 from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QTabWidget, QVBoxLayout, QWidget
 
+from .state import app_state
+from .tab_estimate import EstimateTab
 from .tab_import import DxfImportTab
 
 
 class EasyWorkWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("EasyWork")
         self.resize(900, 600)
-
-        self._dxf_result = None
 
         tabs = QTabWidget()
 
@@ -19,7 +20,7 @@ class EasyWorkWindow(QMainWindow):
         self.import_tab.dxf_loaded.connect(self._handle_dxf_loaded)
         tabs.addTab(self.import_tab, "Загрузить файл для расчёта")
 
-        self.estimate_tab = self._make_placeholder("Смета")
+        self.estimate_tab = EstimateTab()
         tabs.addTab(self.estimate_tab, "Смета")
 
         self.nomenclature_tab = self._make_placeholder("Номенклатура")
@@ -31,16 +32,17 @@ class EasyWorkWindow(QMainWindow):
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.addWidget(QLabel(f"Вкладка «{title}» пока в разработке."))
+        layout.addStretch(1)
         return widget
 
-    def _handle_dxf_loaded(self, result):
-        """Receive DXF analysis and keep it available for other tabs."""
+    def _handle_dxf_loaded(self, result: Any) -> None:
+        """Receive DXF analysis and propagate it to other tabs."""
 
-        self._dxf_result = result
-        # TODO: notify estimate tab once it is implemented
+        app_state.dxf_result = result
+        self.estimate_tab.refresh()
 
 
-def main():
+def main() -> int:
     app = QApplication(sys.argv)
     window = EasyWorkWindow()
     window.show()
